@@ -27,7 +27,7 @@ const {
 } = require('./utils');
 
 (async() => {
-  global.browser = await puppeteer.launch();
+  global.browser = await puppeteer.launch({args: ['--no-sandbox']});
 
   let start = +new Date()
 
