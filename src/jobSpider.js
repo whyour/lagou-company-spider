@@ -1,37 +1,37 @@
-const fs = require('fs-extra')
+const fs = require('fs-extra');
 const puppeteer = require('puppeteer');
-const cheerio = require('cheerio')
-const _ = require('lodash')
-const pQueue = require('p-queue')
-const pRetry = require('p-retry')
-const delay = require('delay')
-const {contains} = require('sanife')
+const cheerio = require('cheerio');
+const _ = require('lodash');
+const pQueue = require('p-queue');
+const pRetry = require('p-retry');
+const delay = require('delay');
+const { contains } = require('sanife');
 
 const {
   log,
   toArray,
   str
-} = require('./utils')
+} = require('./utils');
 const {
   load,
   save,
-} = require('./io')
+} = require('./io');
 
 const filterStr = str => {
-  return str.trim().replace(/\n(\s)+/g, '')
-}
+  return str.trim().replace(/\n(\s)+/g, '');
+};
 
 const grapDetail = async (page, id) => {
 
-  let url = `https://www.lagou.com/gongsi/${id}.html`
-  await page.goto(url)
+  let url = `https://www.lagou.com/gongsi/${id}.html`;
+  await page.goto(url);
 
   let pageInfo = await page.evaluate(() => {
-    let $ = document.querySelector.bind(document)
-    let $$ = document.querySelectorAll.bind(document)
-    let formHead = $('.form_head') && $('.form_head').innerText || '' 
-    let isValidatePage = formHead.indexOf('密码登录') < 0
-    if(!isValidatePage) return {isValidatePage}
+    let $ = document.querySelector.bind(document);
+    let $$ = document.querySelectorAll.bind(document);
+    let formHead = $('.form_head') && $('.form_head').innerText || '';
+    let isValidatePage = formHead.indexOf('密码登录') < 0;
+    if (!isValidatePage) return { isValidatePage };
 
     // let title = $('.job-name').innerText
     // let salary = $('.job_request .salary').innerText
@@ -55,46 +55,46 @@ const grapDetail = async (page, id) => {
       address,
       companyName,
       isValidatePage,
-    }
-  })
+    };
+  });
 
-  if(!pageInfo.isValidatePage){
-    return grapDetail(page, id)
+  if (!pageInfo.isValidatePage) {
+    return grapDetail(page, id);
   }
 
   Object.keys(pageInfo).forEach(key => {
-    if(typeof pageInfo[key] == 'string')
-      pageInfo[key] = pageInfo[key].trim()
-  })
+    if (typeof pageInfo[key] == 'string')
+      pageInfo[key] = pageInfo[key].trim();
+  });
 
-  return pageInfo
-}
+  return pageInfo;
+};
 
-let count = 1
-let len = 1
+let count = 1;
+let len = 1;
 
-const fetchDetail = async(id) => {
-  const page = await browser.newPage()
+const fetchDetail = async (id) => {
+  const page = await browser.newPage();
 
-  const detail = await grapDetail(page, id)
+  const detail = await grapDetail(page, id);
 
-  await page.close()
+  await page.close();
 
-  if(!detail.companyName){
-    log(`https://www.lagou.com/gongsi/${id}.html` ,content)
+  if (!detail.companyName) {
+    log(`https://www.lagou.com/gongsi/${id}.html`, content);
   }
 
-  log(`【${len}/${count++}】正在读取..${detail.companyName}`)
-  
-  return detail
-}
+  log(`【${len}/${count++}】正在读取..${detail.companyName}`);
 
-module.exports = async({
+  return detail;
+};
+
+module.exports = async ({
   concurrency = 1
 }) => {
   let queue = new pQueue({
     concurrency
-  })
+  });
 
   let unique = (a) => [...new Set(a)];
   let _ids = await load('ids', []);
@@ -106,17 +106,17 @@ module.exports = async({
   let details = await load('details', {});
   let tasks = ids.map(id => {
     return async () => {
-      if(details[id]) return details[id]
-      
-      let detail = await pRetry(async() => {
-        return await fetchDetail(id)
+      if (details[id]) return details[id];
+
+      let detail = await pRetry(async () => {
+        return await fetchDetail(id);
       }, {
-        retries: 3
-      })
-      details[id] = detail
-      save('details', details)
-    }
-  })
-  await queue.addAll(tasks)
-  await queue.onIdle()
-}
+          retries: 3
+        });
+      details[id] = detail;
+      save('details', details);
+    };
+  });
+  await queue.addAll(tasks);
+  await queue.onIdle();
+};
