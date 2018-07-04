@@ -59,9 +59,6 @@ const fetchIds = async ({
   domain,
   stage
 }) => {
-
-  // let url = `https://www.lagou.com/jobs/list_${type}?px=default&city=${city}&isShowMoreIndustryField=true&hy=${domain}&jd=${stage}`
-  // let url = "https://www.lagou.com/jobs/list_?city=%E5%85%A8%E5%9B%BD&cl=false&fromSearch=true&labelWords=&suginput="
   let url = `https://www.lagou.com/gongsi/${id}`;
 
   const page = await browser.newPage();

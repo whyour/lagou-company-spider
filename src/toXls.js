@@ -7,17 +7,6 @@ const path = require('path');
 module.exports = async ({ xlsName }) => {
   let details = await load('details');
   let data = Object.keys(details).map(id => details[id]);
-  // let d = await data.map(o => {
-  //   // o.salaryStart = (o.salary.split('-')[0] || "").replace('k', '')
-  //   // o.salaryEnd = (o.salary.split('-')[1] || "").replace('k', '')
-  //   return o
-  // }).filter(o => {
-  //   // return o.title
-  //   }).filter(o => {
-  //     return o.employee != '15-50人';
-  //   }).filter(o => {
-  //     return o.employee != '少于15人';
-  //   })
   let d = await data.map(o => {
     return o;
   });
